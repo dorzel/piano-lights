@@ -44,7 +44,11 @@ while True:
     try:
         for msg in mido.open_input(mido.get_input_names()[0]):
             if msg.type != 'clock':
-                set_pixel(msg.note, msg.velocity)
+                if msg.type != 'control_change':
+                    set_pixel(msg.note, msg.velocity)
+                else:
+                    # floor pedal was pressed
+                    pass
     except KeyboardInterrupt:
         print('done.')
         break
