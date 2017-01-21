@@ -13,9 +13,29 @@ blank_color = Color(0, 0, 0)
 
 
 class PixelWatcher:
-    def __init__(self):
-        pass
+    def __init__(self, strip):
+        self._strip = strip
+        self._pixels = {}
 
+    def watch_pixel(self, pixel_num, initial_color):
+        # sets a pixel to be watched. initial_color must be in [r,g,b] form.
+        if not pixel_num in self._pixels:
+            self._pixels[pixel_num] = {'current_color': initial_color}
+
+    def _remove_pixel(self, pixel_num):
+        self._pixels.pop(pixel_num)
+
+    def add_effect(pixel_num, effect_func):
+        # effect_func must take in an [r,g,b] list and perform operations in place
+        # on those values
+        self._pixels[pixel_num]['effect_func'] = effect_func
+
+    def _run_effect(pixel_num):
+        self._pixels[pixel_num]['effect_func'](self._pixels['current_color'])
+
+    def run_all_effects(self):
+        for pixel in self._pixels.keys():
+            self._run_effect(pixel)
 
 
 def set_blank():
