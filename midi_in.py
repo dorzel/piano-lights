@@ -35,12 +35,15 @@ class PixelWatcher:
     def watch_pixel(self, pixel_num, initial_color):
         # sets a pixel to be watched. initial_color must be in [r,g,b] form.
         if not pixel_num in self._pixels:
+            print('put watch on pixel {}'.format(pixel_num))
             self._pixels[pixel_num] = {'current_color': initial_color}
         else:
             # when pressed again, reset the color
+            print('reset color for pixel {}'.format(pixel_num))
             self._pixels[pixel_num]['current_color'] = initial_color
 
     def _remove_pixel(self, pixel_num):
+        print('removed watch on pixel {}'.format(pixel_num))
         self._pixels.pop(pixel_num)
 
     def add_effect(pixel_num, effect_func):
@@ -48,6 +51,7 @@ class PixelWatcher:
         # on those values. It also must return None when the effect is finished,
         # which means that it must monitor its own "doneness"
         self._pixels[pixel_num]['effect_func'] = effect_func
+        print('added effect {} to pixel {}'.format(effect_func, pixel_num))
 
     def _run_effect(pixel_num):
         result = self._pixels[pixel_num]['effect_func'](self._pixels['current_color'])
@@ -57,15 +61,15 @@ class PixelWatcher:
                                                     self._pixels['current_color'][1],
                                                     self._pixels['current_color'][2])
         else:
-            # effect has signaled that it is done
+            # effect has signaled that it is done by returning None
             self._remove_pixel(pixel_num)
 
     def run_all_effects(self):
         print('in run effects')
         while self.active:
             print('in run effect while loop')
-            for pixel in self._pixels.keys():
-                self._run_effect(pixel)
+            for pixel_num in list(self._pixels.keys()):
+                self._run_effect(pixel_num)
             # better to just call one show() after all effects have been run
             self._strip.show()
             sleep(0.1)
@@ -83,12 +87,19 @@ def color_from_velocity(velocity):
              ceil(scale_factor*velocity*base_color[1]),
              ceil(scale_factor*velocity*base_color[2])]
 
+def reduce_effect(rgb_in):
+    if not all([comp == 0 for comp in rgb_in]):
+        rgb_in = [comp - 1 for comp in rgb_in if comp != 0]
+        return True
+    else:
+        return None
+
 def set_pixel(note, velocity):
     if velocity:
         # note was pressed down
         try:
-            print('put watch on pixel {}'.format(note))
             watcher.watch_pixel(note, color_from_velocity(velocity))
+            watcher.add_effect(note, reduce_effect)
         except Exception as e:
             print(e)
 
@@ -101,7 +112,7 @@ set_blank()
 watcher.start()
 try:
     for msg in mido.open_input(mido.get_input_names()[0]):
-        print('in midi loop')
+        #print('in midi loop')
         if msg.type != 'clock':
             if msg.type != 'control_change':
                 set_pixel(msg.note, msg.velocity)
