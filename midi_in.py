@@ -12,6 +12,12 @@ base_color = (255, 20, 20)
 blank_color = Color(0, 0, 0)
 
 
+class PixelWatcher:
+    def __init__(self):
+        pass
+
+
+
 def set_blank():
     for i in range(pixel_strip.numPixels()):
         pixel_strip.setPixelColorRGB(i, 0, 0, 0)
