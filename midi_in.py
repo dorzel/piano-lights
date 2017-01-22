@@ -3,6 +3,7 @@ import mido
 from neopixel import *
 from threading import Thread
 from time import sleep
+from random import randint
 
 pixel_strip = Adafruit_NeoPixel(120, 18, 800000)
 pixel_strip.begin()
@@ -88,6 +89,11 @@ def color_from_velocity(velocity):
              int(scale_factor*velocity*base_color[1]),
              int(scale_factor*velocity*base_color[2])]
 
+def random_color_from_velocity(velocity):
+    return [int(scale_factor*velocity*randint(0, 255)),
+             int(scale_factor*velocity*randint(0, 255)),
+             int(scale_factor*velocity*randint(0, 255))]
+
 def reduce_effect(rgb_in):
     if not all(comp == 0 for comp in rgb_in):
         return [comp -8 if comp > 0 and comp - 8 > 0 else 0 for comp in rgb_in]
@@ -99,7 +105,8 @@ def set_pixel(note, velocity):
     if velocity:
         # note was pressed down
         try:
-            watcher.watch_pixel(note, color_from_velocity(velocity))
+            #watcher.watch_pixel(note, color_from_velocity(velocity))
+            watcher.watch_pixel(note, random_color_from_velocity(velocity))
             watcher.add_effect(note, reduce_effect)
         except Exception as e:
             print(e)
