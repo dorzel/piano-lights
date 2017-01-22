@@ -90,7 +90,7 @@ def color_from_velocity(velocity):
 
 def reduce_effect(rgb_in):
     if not all(comp == 0 for comp in rgb_in):
-        return [comp -10 if comp > 0 and comp - 10 > 0 else 0 for comp in rgb_in]
+        return [comp -8 if comp > 0 and comp - 8 > 0 else 0 for comp in rgb_in]
     else:
         # all components are 0, ending the effect
         return None
