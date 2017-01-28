@@ -123,7 +123,7 @@ set_blank()
 watcher.start()
 try:
     # make sure the piano is connected
-    input_device = [name for name in mido.get_input_names() if 'Digital' in name]
+    input_device = [name for name in mido.get_input_names() if 'Digital' in name][0]
     if input_device:
         for msg in mido.open_input(input_device):
             if msg.type != 'clock':
