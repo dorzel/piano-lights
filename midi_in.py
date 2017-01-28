@@ -122,14 +122,22 @@ def set_pixel(note, velocity):
 set_blank()
 watcher.start()
 try:
-    for msg in mido.open_input(mido.get_input_names()[0]):
-        if msg.type != 'clock':
-            if msg.type != 'control_change':
-                set_pixel(msg.note, msg.velocity)
-            else:
-                # floor pedal was pressed
-                pass    
+    # make sure the piano is connected
+    input_device = [name for name in mido.get_input_names() if 'Digital' in name]
+    if input_device:
+        for msg in mido.open_input(input_device):
+            if msg.type != 'clock':
+                if msg.type != 'control_change':
+                    set_pixel(msg.note, msg.velocity)
+                else:
+                    # floor pedal was pressed
+                    pass
+    else:
+        raise Exception("Piano was not found, did you turn the piano on before running this?")
 except KeyboardInterrupt:
-    set_blank()
-    watcher.stop()
     print('done.')
+except Exception as e:
+    print(e)
+finally:
+    watcher.stop()
+    set_blank()
