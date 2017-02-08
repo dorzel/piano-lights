@@ -15,6 +15,16 @@ base_color = (255, 255, 0)
 blank_color = Color(0, 0, 0)
 
 
+class Pixel:
+    def __init__(self):
+        pass
+
+
+class Effect:
+    def __init__(self):
+        pass
+
+
 class PixelWatcher:
     def __init__(self, strip):
         self._strip = strip
@@ -96,14 +106,14 @@ def random_color_from_velocity(velocity):
 
 def reduce_effect(rgb_in):
     if not all(comp == 0 for comp in rgb_in):
-        return [comp -8 if comp > 0 and comp - 8 > 0 else 0 for comp in rgb_in]
+        return [comp - 6 if comp > 0 and comp - 6 > 0 else 0 for comp in rgb_in]
     else:
         # all components are 0, ending the effect
         return None
 
 def set_pixel(note, velocity):
     if velocity:
-        # note was pressed down
+        # key was pressed down
         try:
             #watcher.watch_pixel(note, color_from_velocity(velocity))
             watcher.watch_pixel(note, random_color_from_velocity(velocity))
@@ -122,7 +132,6 @@ def set_pixel(note, velocity):
 set_blank()
 watcher.start()
 try:
-    # make sure the piano is connected
     input_device = [name for name in mido.get_input_names() if 'Digital' in name][0]
     if input_device:
         for msg in mido.open_input(input_device):
@@ -133,7 +142,8 @@ try:
                     # floor pedal was pressed
                     pass
     else:
-        raise Exception("Piano was not found, did you turn the piano on before running this?")
+        raise Exception("Piano was not found, did you turn the piano on before running this?"
+                        "Devices found: {}".format(mido.get_input_names()))
 except KeyboardInterrupt:
     print('done.')
 except Exception as e:
