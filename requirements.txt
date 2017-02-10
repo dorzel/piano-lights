@@ -1,4 +1,4 @@
 mido
 pyaudio
 numpy
--e git@github.com:jgarff/rpi_ws281x.git
+-e git+https://github.com/jgarff/rpi_ws281x.git
