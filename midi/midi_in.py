@@ -3,6 +3,7 @@ import mido
 from neopixel import *
 from threading import Thread
 from time import sleep
+from random import randint
 
 pixel_strip = Adafruit_NeoPixel(120, 18, 800000)
 pixel_strip.begin()
@@ -14,6 +15,16 @@ base_color = (255, 255, 0)
 blank_color = Color(0, 0, 0)
 
 
+class Pixel:
+    def __init__(self):
+        pass
+
+
+class Effect:
+    def __init__(self):
+        pass
+
+
 class PixelWatcher:
     def __init__(self, strip):
         self._strip = strip
@@ -23,9 +34,7 @@ class PixelWatcher:
 
     def start(self):
         # spawn a new thread to process effects
-        #print('starting watch thread...')
         self._watch_thread = Thread(target=self.run_all_effects)
-        #print('watch thread: {}'.format(self._watch_thread))
         self._watch_thread.start()
 
     def stop(self):
@@ -35,28 +44,25 @@ class PixelWatcher:
     def watch_pixel(self, pixel_num, initial_color):
         # sets a pixel to be watched. initial_color must be in [r,g,b] form.
         if not pixel_num in self._pixels:
-            #print('put watch on pixel {} with initial color {}'.format(pixel_num, initial_color))
             self._pixels[pixel_num] = {'current_color': initial_color}
         else:
             # when pressed again, reset the color
-            #print('reset color for pixel {}'.format(pixel_num))
             self._pixels[pixel_num]['current_color'] = initial_color
 
     def _remove_pixel(self, pixel_num):
-        #print('removed watch on pixel {}'.format(pixel_num))
         self._pixels.pop(pixel_num)
 
     def add_effect(self, pixel_num, effect_func):
-        # effect_func must take in an [r,g,b] list and return a new list of transformed rgb values.
-        # It also must return None when the effect is finished, which means that it must monitor
-        # its own "doneness"
+        # effect_func must take in an [r,g,b] list and return a new list of
+        # transformed rgb values. It also must return None when the effect is
+        # finished, which means that it must monitor its own "doneness"
         self._pixels[pixel_num]['effect_func'] = effect_func
-        #print('added effect {} to pixel {}'.format(effect_func, pixel_num))
 
     def _run_effect(self, pixel_num):
         result = self._pixels[pixel_num]['effect_func'](self._pixels[pixel_num]['current_color'])
         if result:
-            # set the color after the effect function has modified the color values
+            # set the color after the effect function has modified the color
+            # values
             self._pixels[pixel_num]['current_color'] = result
             self._strip.setPixelColorRGB(pixel_num, result[0],
                                                     result[1],
@@ -71,8 +77,8 @@ class PixelWatcher:
                 self._run_effect(pixel_num)
             # better to just call one show() after all effects have been run
             self._strip.show()
-            # this sleep controls how fast all of the effects are done, just need to hand
-            # calibrate it with the effect functions for now.
+            # this sleep controls how fast all of the effects are done, just
+            # need to hand calibrate it with the effect functions for now.
             sleep(0.05)
 
 watcher = PixelWatcher(pixel_strip)
@@ -83,23 +89,32 @@ def set_blank():
         pixel_strip.setPixelColorRGB(i, 0, 0, 0)
     pixel_strip.show()
 
+
 def color_from_velocity(velocity):
-    return  [int(scale_factor*velocity*base_color[0]),
-             int(scale_factor*velocity*base_color[1]),
-             int(scale_factor*velocity*base_color[2])]
+    return [int(scale_factor*velocity*base_color[0]),
+            int(scale_factor*velocity*base_color[1]),
+            int(scale_factor*velocity*base_color[2])]
+
+
+def random_color_from_velocity(velocity):
+    return [int(scale_factor*velocity*randint(0, 255)),
+            int(scale_factor*velocity*randint(0, 255)),
+            int(scale_factor*velocity*randint(0, 255))]
+
 
 def reduce_effect(rgb_in):
     if not all(comp == 0 for comp in rgb_in):
-        return [comp -8 if comp > 0 and comp - 8 > 0 else 0 for comp in rgb_in]
+        return [comp - 6 if comp > 0 and comp - 6 > 0 else 0 for comp in rgb_in]
     else:
         # all components are 0, ending the effect
         return None
 
+
 def set_pixel(note, velocity):
     if velocity:
-        # note was pressed down
+        # key was pressed down
         try:
-            watcher.watch_pixel(note, color_from_velocity(velocity))
+            watcher.watch_pixel(note, random_color_from_velocity(velocity))
             watcher.add_effect(note, reduce_effect)
         except Exception as e:
             print(e)
@@ -115,14 +130,23 @@ def set_pixel(note, velocity):
 set_blank()
 watcher.start()
 try:
-    for msg in mido.open_input(mido.get_input_names()[0]):
-        if msg.type != 'clock':
-            if msg.type != 'control_change':
-                set_pixel(msg.note, msg.velocity)
-            else:
-                # floor pedal was pressed
-                pass    
+    input_device = [name for name in mido.get_input_names() if 'Digital' in name][0]
+    if input_device:
+        for msg in mido.open_input(input_device):
+            if msg.type != 'clock':
+                if msg.type != 'control_change':
+                    set_pixel(msg.note, msg.velocity)
+                else:
+                    # floor pedal was pressed
+                    pass
+    else:
+        raise Exception("Piano was not found, did you turn the piano on before"
+                        " running this? Devices found: {}"
+                        .format(mido.get_input_names()))
 except KeyboardInterrupt:
-    set_blank()
-    watcher.stop()
     print('done.')
+except Exception as e:
+    print(e)
+finally:
+    watcher.stop()
+    set_blank()
