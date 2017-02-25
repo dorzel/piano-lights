@@ -5,13 +5,8 @@ from threading import Thread
 from time import sleep
 from random import randint
 
-pixel_strip = Adafruit_NeoPixel(120, 18, 800000)
-pixel_strip.begin()
-
 # scale_factor is related to the max key velocity, 100.
-# base_color is the base pixel color to be scaled with velocity later
 scale_factor = 1/100
-base_color = (255, 255, 0)
 blank_color = Color(0, 0, 0)
 
 
@@ -81,19 +76,11 @@ class PixelWatcher:
             # need to hand calibrate it with the effect functions for now.
             sleep(0.05)
 
-watcher = PixelWatcher(pixel_strip)
-
 
 def set_blank():
     for i in range(pixel_strip.numPixels()):
         pixel_strip.setPixelColorRGB(i, 0, 0, 0)
     pixel_strip.show()
-
-
-def color_from_velocity(velocity):
-    return [int(scale_factor*velocity*base_color[0]),
-            int(scale_factor*velocity*base_color[1]),
-            int(scale_factor*velocity*base_color[2])]
 
 
 def random_color_from_velocity(velocity):
@@ -122,7 +109,9 @@ def set_pixel(note, velocity):
         # key has been released
         pass
 
-
+pixel_strip = Adafruit_NeoPixel(120, 18, 800000)
+pixel_strip.begin()
+watcher = PixelWatcher(pixel_strip)
 # get midi input from piano, incoming data is a msg with attributes:
 # note: note pressed, 21 being lowest, 108 being highest
 # velocity: if key was pressed down, an int related to amount of force on
