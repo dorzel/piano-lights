@@ -10,35 +10,25 @@ scale_factor = 1/100
 blank_color = Color(0, 0, 0)
 
 
-class Pixel:
-    def __init__(self):
-        pass
-
-
-class Effect:
-    def __init__(self):
-        pass
-
-
 class PixelWatcher:
     def __init__(self, strip):
         self._strip = strip
         self._pixels = {}
         self._watch_thread = None
-        self.active = True
+        self._active = True
 
     def start(self):
         # spawn a new thread to process effects
-        self._watch_thread = Thread(target=self.run_all_effects)
+        self._watch_thread = Thread(target=self._run_all_effects)
         self._watch_thread.start()
 
     def stop(self):
-        self.active = False
+        self._active = False
         self._watch_thread.join()
 
     def watch_pixel(self, pixel_num, initial_color):
         # sets a pixel to be watched. initial_color must be in [r,g,b] form.
-        if not pixel_num in self._pixels:
+        if pixel_num not in self._pixels:
             self._pixels[pixel_num] = {'current_color': initial_color}
         else:
             # when pressed again, reset the color
@@ -66,7 +56,7 @@ class PixelWatcher:
             # effect has signaled that it is done by returning None
             self._remove_pixel(pixel_num)
 
-    def run_all_effects(self):
+    def _run_all_effects(self):
         while self.active:
             for pixel_num in list(self._pixels.keys()):
                 self._run_effect(pixel_num)
@@ -77,10 +67,11 @@ class PixelWatcher:
             sleep(0.05)
 
 
-def set_blank():
-    for i in range(pixel_strip.numPixels()):
-        pixel_strip.setPixelColorRGB(i, 0, 0, 0)
-    pixel_strip.show()
+def set_blank(strip):
+    """set the strip to all black, clearing all colors"""
+    for i in range(strip.numPixels()):
+        strip.setPixelColorRGB(i, 0, 0, 0)
+    strip.show()
 
 
 def random_color_from_velocity(velocity):
@@ -97,7 +88,7 @@ def reduce_effect(rgb_in):
         return None
 
 
-def set_pixel(note, velocity):
+def set_pixel(note, velocity, watcher):
     if velocity:
         # key was pressed down
         try:
@@ -109,22 +100,23 @@ def set_pixel(note, velocity):
         # key has been released
         pass
 
+
 pixel_strip = Adafruit_NeoPixel(120, 18, 800000)
 pixel_strip.begin()
-watcher = PixelWatcher(pixel_strip)
+pixel_watcher = PixelWatcher(pixel_strip)
+pixel_watcher.start()
+set_blank(pixel_strip)
 # get midi input from piano, incoming data is a msg with attributes:
 # note: note pressed, 21 being lowest, 108 being highest
 # velocity: if key was pressed down, an int related to amount of force on
 # press, if key was released, velocity is 0.
-set_blank()
-watcher.start()
 try:
-    input_device = [name for name in mido.get_input_names() if 'Digital' in name][0]
+    input_device = [name for name in mido.get_input_names() if 'Digital' in name]
     if input_device:
-        for msg in mido.open_input(input_device):
+        for msg in mido.open_input(input_device[0]):
             if msg.type != 'clock':
                 if msg.type != 'control_change':
-                    set_pixel(msg.note, msg.velocity)
+                    set_pixel(msg.note, msg.velocity, pixel_watcher)
                 else:
                     # floor pedal was pressed
                     pass
@@ -133,9 +125,9 @@ try:
                         " running this? Devices found: {}"
                         .format(mido.get_input_names()))
 except KeyboardInterrupt:
-    print('done.')
+    print('done')
 except Exception as e:
     print(e)
 finally:
-    watcher.stop()
+    pixel_watcher.stop()
     set_blank()
