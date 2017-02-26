@@ -57,7 +57,7 @@ class PixelWatcher:
             self._remove_pixel(pixel_num)
 
     def _run_all_effects(self):
-        while self.active:
+        while self._active:
             for pixel_num in list(self._pixels.keys()):
                 self._run_effect(pixel_num)
             # better to just call one show() after all effects have been run
