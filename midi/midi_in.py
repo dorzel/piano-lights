@@ -5,7 +5,7 @@ from random import randint
 import mido
 from neopixel import *
 
-from .pixel_watcher import PixelWatcher
+from pixel_watcher import PixelWatcher
 
 # scale_factor is related to the max key velocity, 100.
 scale_factor = 1/100
