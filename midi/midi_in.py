@@ -1,8 +1,11 @@
 from __future__ import division, print_function
+
+from random import randint
+
 import mido
 from neopixel import *
-from random import randint
-from .pixel_watcher import PixelWatcher
+
+from ..midi.pixel_watcher import PixelWatcher
 
 # scale_factor is related to the max key velocity, 100.
 scale_factor = 1/100
