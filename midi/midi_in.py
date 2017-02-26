@@ -130,4 +130,4 @@ except Exception as e:
     print(e)
 finally:
     pixel_watcher.stop()
-    set_blank()
+    set_blank(pixel_strip)
