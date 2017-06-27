@@ -37,7 +37,9 @@ class PixelWatcher:
         self._pixels[pixel_num].effect_func = effect_func
 
     def _run_effect(self, pixel_num):
-        result = self._pixels[pixel_num].effect_func(self._pixels[pixel_num].current_color)
+        result = self._pixels[pixel_num].effect_func(
+            self._pixels[pixel_num].current_color
+        )
         if result:
             # set the color after the effect function has modified the color
             # values
@@ -52,7 +54,7 @@ class PixelWatcher:
     def _run_all_effects(self):
         """continuously run the effects for each currently watched pixel"""
         while self._active:
-            for pixel_num in list(self._pixels.keys()):
+            for pixel_num in self._pixels:
                 self._run_effect(pixel_num)
             # better to just call one show() after all effects have been run
             self._strip.show()

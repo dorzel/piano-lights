@@ -1,16 +1,11 @@
 from __future__ import division, print_function
 
-from random import randint
-
 import mido
+from random import randint
 from neopixel import *
 
 from pixel_watcher import PixelWatcher
 from effect import ReduceEffect
-
-# scale_factor is related to the max key velocity, 100.
-scale_factor = 1/100
-blank_color = Color(0, 0, 0)
 
 
 def set_blank(strip):
@@ -19,17 +14,21 @@ def set_blank(strip):
         strip.setPixelColorRGB(i, 0, 0, 0)
     strip.show()
 
+
 def random_color_from_velocity(velocity):
+    # scale_factor is related to the max key velocity, 100.
+    scale_factor = 1 / 100
     return [int(scale_factor*velocity*randint(0, 255)),
             int(scale_factor*velocity*randint(0, 255)),
             int(scale_factor*velocity*randint(0, 255))]
+
 
 def set_pixel(note, velocity, watcher, effect):
     if velocity:
         # key was pressed down
         try:
             watcher.watch_pixel(note, random_color_from_velocity(velocity))
-            watcher.add_effect(note, effect().effect_func)
+            watcher.add_effect(note, effect.effect_func)
         except Exception as e:
             print(e)
     else:
@@ -53,7 +52,7 @@ try:
             if msg.type != 'clock':
                 if msg.type != 'control_change':
                     set_pixel(msg.note, msg.velocity, pixel_watcher,
-                              ReduceEffect)
+                              ReduceEffect())
                 else:
                     # floor pedal was pressed
                     pass
