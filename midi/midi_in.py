@@ -6,6 +6,7 @@ import mido
 from neopixel import *
 
 from pixel_watcher import PixelWatcher
+from effect import ReduceEffect
 
 # scale_factor is related to the max key velocity, 100.
 scale_factor = 1/100
