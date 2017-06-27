@@ -28,7 +28,7 @@ def set_pixel(note, velocity, watcher, effect):
         # key was pressed down
         try:
             watcher.watch_pixel(note, random_color_from_velocity(velocity))
-            watcher.add_effect(note, effect.effect_func)
+            watcher.add_effect(note, effect)
         except Exception as e:
             print(e)
     else:

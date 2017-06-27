@@ -30,20 +30,16 @@ class PixelWatcher:
     def _remove_pixel(self, pixel_num):
         self._pixels.pop(pixel_num)
 
-    def add_effect(self, pixel_num, effect_func):
-        # effect_func must take in an [r,g,b] list and return a new list of
-        # transformed rgb values. It also must return None when the effect is
-        # finished, which means that it must monitor its own "doneness"
-        self._pixels[pixel_num].effect_func = effect_func
+    def add_effect(self, pixel_num, effect):
+        """set the pixels effect to the given instantiated effect class"""
+        self._pixels[pixel_num].set_effect(effect())
 
     def _run_effect(self, pixel_num):
-        result = self._pixels[pixel_num].effect_func(
-            self._pixels[pixel_num].current_color
-        )
+        result = self._pixels[pixel_num].run_effect()
         if result:
             # set the color after the effect function has modified the color
             # values
-            self._pixels[pixel_num].current_color = result
+            self._pixels[pixel_num].set_color(result)
             self._strip.setPixelColorRGB(pixel_num, result[0],
                                                     result[1],
                                                     result[2])
