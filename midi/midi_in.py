@@ -29,7 +29,7 @@ def set_pixel(note, velocity, watcher, effect):
         # key was pressed down
         try:
             watcher.watch_pixel(note, random_color_from_velocity(velocity))
-            watcher.add_effect(note, effect.effect_func)
+            watcher.add_effect(note, effect().effect_func)
         except Exception as e:
             print(e)
     else:
@@ -41,7 +41,6 @@ pixel_strip = Adafruit_NeoPixel(120, 18, 800000)
 pixel_strip.begin()
 pixel_watcher = PixelWatcher(pixel_strip)
 pixel_watcher.start()
-reduce_effect = ReduceEffect()
 set_blank(pixel_strip)
 # get midi input from piano, incoming data is a msg with attributes:
 # note: note pressed, 21 being lowest, 108 being highest
@@ -54,7 +53,7 @@ try:
             if msg.type != 'clock':
                 if msg.type != 'control_change':
                     set_pixel(msg.note, msg.velocity, pixel_watcher,
-                              reduce_effect)
+                              ReduceEffect)
                 else:
                     # floor pedal was pressed
                     pass

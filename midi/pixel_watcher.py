@@ -1,5 +1,6 @@
 from threading import Thread
 from time import sleep
+from pixel import Pixel
 
 
 class PixelWatcher:
@@ -21,10 +22,10 @@ class PixelWatcher:
     def watch_pixel(self, pixel_num, initial_color):
         # sets a pixel to be watched. initial_color must be in [r,g,b] form.
         if pixel_num not in self._pixels:
-            self._pixels[pixel_num] = {'current_color': initial_color}
+            self._pixels[pixel_num] = Pixel(pixel_num, initial_color)
         else:
             # when pressed again, reset the color
-            self._pixels[pixel_num]['current_color'] = initial_color
+            self._pixels[pixel_num].reset_color()
 
     def _remove_pixel(self, pixel_num):
         self._pixels.pop(pixel_num)
@@ -33,14 +34,14 @@ class PixelWatcher:
         # effect_func must take in an [r,g,b] list and return a new list of
         # transformed rgb values. It also must return None when the effect is
         # finished, which means that it must monitor its own "doneness"
-        self._pixels[pixel_num]['effect_func'] = effect_func
+        self._pixels[pixel_num].effect_func = effect_func
 
     def _run_effect(self, pixel_num):
-        result = self._pixels[pixel_num]['effect_func'](self._pixels[pixel_num]['current_color'])
+        result = self._pixels[pixel_num].effect_func(self._pixels[pixel_num].current_color)
         if result:
             # set the color after the effect function has modified the color
             # values
-            self._pixels[pixel_num]['current_color'] = result
+            self._pixels[pixel_num].current_color = result
             self._strip.setPixelColorRGB(pixel_num, result[0],
                                                     result[1],
                                                     result[2])

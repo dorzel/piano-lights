@@ -31,7 +31,7 @@ class ReduceEffect(BaseEffect):
     looped through, ending when all values are zero.
     """
     @effect
-    def effect_func(self, rgb_in):
+    def effect_func(self, rgb_in, pixel):
         if not all(comp == 0 for comp in rgb_in):
             return [comp - 6 if comp > 0 and comp - 6 > 0 else 0 for comp in
                     rgb_in]
