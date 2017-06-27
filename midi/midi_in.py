@@ -6,6 +6,7 @@ import mido
 from neopixel import *
 
 from pixel_watcher import PixelWatcher
+from effect import ReduceEffect
 
 # scale_factor is related to the max key velocity, 100.
 scale_factor = 1/100
@@ -18,27 +19,17 @@ def set_blank(strip):
         strip.setPixelColorRGB(i, 0, 0, 0)
     strip.show()
 
-
 def random_color_from_velocity(velocity):
     return [int(scale_factor*velocity*randint(0, 255)),
             int(scale_factor*velocity*randint(0, 255)),
             int(scale_factor*velocity*randint(0, 255))]
-
-
-def reduce_effect(rgb_in):
-    if not all(comp == 0 for comp in rgb_in):
-        return [comp - 6 if comp > 0 and comp - 6 > 0 else 0 for comp in rgb_in]
-    else:
-        # all components are 0, ending the effect
-        return None
-
 
 def set_pixel(note, velocity, watcher, effect):
     if velocity:
         # key was pressed down
         try:
             watcher.watch_pixel(note, random_color_from_velocity(velocity))
-            watcher.add_effect(note, effect)
+            watcher.add_effect(note, effect.effect_func)
         except Exception as e:
             print(e)
     else:
@@ -50,6 +41,7 @@ pixel_strip = Adafruit_NeoPixel(120, 18, 800000)
 pixel_strip.begin()
 pixel_watcher = PixelWatcher(pixel_strip)
 pixel_watcher.start()
+reduce_effect = ReduceEffect()
 set_blank(pixel_strip)
 # get midi input from piano, incoming data is a msg with attributes:
 # note: note pressed, 21 being lowest, 108 being highest
