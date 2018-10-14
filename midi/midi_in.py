@@ -50,14 +50,15 @@ set_blank(pixel_strip)
 try:
     input_device = [name for name in mido.get_input_names() if 'Digital' in name]
     if input_device:
-        for msg in mido.open_input(input_device[0]):
-            if msg.type != 'clock':
-                if msg.type != 'control_change':
-                    set_pixel(msg.note, msg.velocity, pixel_watcher,
-                              reduce_effect)
-                else:
-                    # floor pedal was pressed
-                    pass
+        with mido.open_input(input_device[0]) as port:
+            for msg in port:
+                if msg.type != 'clock':
+                    if msg.type != 'control_change':
+                        set_pixel(msg.note, msg.velocity, pixel_watcher,
+                                  reduce_effect)
+                    else:
+                        # floor pedal was pressed
+                        pass
     else:
         raise Exception("Piano was not found, did you turn the piano on before"
                         " running this? Devices found: {}"
