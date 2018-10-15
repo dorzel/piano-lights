@@ -2,3 +2,4 @@ mido
 pyaudio
 numpy
 rpi_ws281x
+python-rtmidi
